@@ -24,9 +24,11 @@ the handler returns the following JSON:
 
 Edit the `DataResponse` and `DataRequest` structs as you need.
 
+Should use ? to propogate casting failures. have error variant instead of unreachable!()
+
 ## Question 2
 
-### a)
+### a
 Write (Postgres) SQL `CREATE TABLE` statements to create the following schema.
 Make sure to include foreign keys for the relationships that will `CASCADE` upon deletion.
 ![Database Schema](db_schema.png)
@@ -34,15 +36,22 @@ Make sure to include foreign keys for the relationships that will `CASCADE` upon
 **Answer box:**
 ```sql
 CREATE TABLE forms (
-    --     Add columns here
+    id SERIAL PRIMARY KEY,
+    title TEXT,
+    description TEXT,
 );
 
 CREATE TABLE questions (
-    --     Add columns here
+    id SERIAL PRIMARY KEY,
+    form_id INT NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+    title TEXT,
+    question_type question_type NOT NULL,
 );
 
 CREATE TABLE question_options (
-    --     Add columns here
+    id SERIAL PRIMARY KEY,
+    question_id INT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    options TEXT,
 );
 ```
 
@@ -58,5 +67,14 @@ Using the above schema, write a (Postgres) SQL `SELECT` query to return all ques
 
 **Answer box:**
 ```sql
--- Write query here
+SELECT 
+    questions.id, 
+    questions.form_id, 
+    questions.title, 
+    questions.question_type, 
+    array_agg(question_options.options)
+FROM questions
+LEFT JOIN question_options ON questions.id = question_options.question_id
+WHERE questions.form_id = 26583
+GROUP BY questions.id;
 ```
